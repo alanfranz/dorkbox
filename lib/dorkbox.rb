@@ -14,7 +14,6 @@ MISSING:
 - notification on conflict/error
 - some shell escaping for bashlike/sanitize possible names
 - something to show other clients and status
-- if one sync fails, go on with others
 - better docs/verbosity
 - random delay option for sync_all_tracked: otherwise unneeded conflicts can arise quite often
 and set such random delay for cronjob
