@@ -19,7 +19,6 @@ MISSING:
 - random delay option for sync_all_tracked: otherwise unneeded conflicts can arise quite often
 and set such random delay for cronjob
 - logging
-- track and untrack should lock on config file
 '
 
 module Dorkbox
@@ -28,6 +27,7 @@ module Dorkbox
   CONFLICT_STRING='CONFLICT_MUST_MANUALLY_MERGE'
   GITIGNORE='.gitignore'
   DORKBOX_CONFIG_PATH = File.join(Dir.home, ".dorkbox.yml")
+  DORKBOX_CONFIG_LOCK = DORKBOX_CONFIG_PATH + '.lock'
   DORKBOX_CRONTAB_COMMENT = '# dorkbox sync cronjob'
 
   class InterProcessLock
@@ -145,11 +145,12 @@ module Dorkbox
       @localdir = abs_local_directory
       @conflict_string = File.join(abs_local_directory, Dorkbox::CONFLICT_STRING)
       @client_id = @git.cmd('config', '--local', '--get', 'dorkbox.client-id').strip()
-      @lock = Dorkbox::InterProcessLock.new(File.join(@localdir, Dorkbox::LOCKFILE_NAME))
+      @sync_lock = Dorkbox::InterProcessLock.new(File.join(@localdir, Dorkbox::LOCKFILE_NAME))
+      @track_lock = Dorkbox::InterProcessLock.new(Dorkbox::DORKBOX_CONFIG_LOCK)
     end
 
     def sync
-      @lock.exclusive() {
+      @sync_lock.exclusive() {
         if File.exists?(@conflict_string)
           log "Conflict found, not syncing."
           raise StandardError.new("Conflict found, not syncing.")
@@ -177,7 +178,7 @@ module Dorkbox
     end
 
     def track
-      @lock.exclusive() {
+      @track_lock.exclusive() {
         begin
           cfg = YAML.load_file(DORKBOX_CONFIG_PATH)
         rescue Errno::ENOENT
@@ -190,7 +191,7 @@ module Dorkbox
     end
 
     def untrack
-      @lock.exclusive() {
+      @track_lock.exclusive() {
         begin
           cfg = YAML.load_file(DORKBOX_CONFIG_PATH)
         rescue Errno::ENOENT
