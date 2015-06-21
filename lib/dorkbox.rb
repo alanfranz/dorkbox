@@ -19,6 +19,9 @@ MISSING:
 - random delay option for sync_all_tracked: otherwise unneeded conflicts can arise quite often
 and set such random delay for cronjob
 - logging
+-.id configurations: make sure we don\'t get duplicates
+- something to solve conflicts and go on
+- better way to configure file paths for test purposes
 '
 
 module Dorkbox
@@ -225,7 +228,13 @@ module Dorkbox
       return
     end
     # TODO: don't crash if one syncing fails!
-    cfg[:track].each { |d| Repository.new(d).sync() }
+    cfg[:track].each { |d|
+      begin
+        Repository.new(d).sync()
+      rescue
+        log "Error while syncing repository #{d}"
+      end
+    }
   end
 
   def self.enable_dorkbox_cronjob(executable=File.join(File.dirname(File.expand_path(__FILE__)), '..', 'bin', 'dorkbox'))

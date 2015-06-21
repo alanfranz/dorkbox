@@ -50,9 +50,11 @@ class TestSync < MiniTest::Unit::TestCase
 
     @first_client_dir = Dir.mktmpdir()
     @second_client_dir = Dir.mktmpdir()
+    @third_client_dir = Dir.mktmpdir()
 
     @first_repo = Dorkbox::Repository.create_new(@first_client_dir, @remote_repo_dir)
     @second_repo = Dorkbox::Repository.connect_existing(@second_client_dir, @remote_repo_dir)
+    @third_repo = Dorkbox::Repository.connect_existing(@third_client_dir, @remote_repo_dir)
   end
 
   def teardown
@@ -103,6 +105,29 @@ class TestSync < MiniTest::Unit::TestCase
     Dir.chdir(@first_client_dir) {
       Dorkbox::sync_all_tracked()
       File.open("something", "r") { |f| assert_equal("asdxyz", f.read()) }
+    }
+  end
+
+  def test_sync_all_tracking_syncs_repos_independently
+    Dir.chdir(@first_client_dir) {
+      File.open("something", "w") { |f| f.write("asd") }
+      Dorkbox::sync_all_tracked()
+    }
+
+    Dir.chdir(@first_client_dir) {
+      File.open("something", "w") { |f| f.write("xyzxyz") }
+      @first_repo.sync()
+    }
+
+    Dir.chdir(@second_client_dir) {
+      File.open("something", "w") { |f| f.write("kkkkkk") }
+      # this will result in a conflict when syncing
+    }
+
+    Dorkbox::sync_all_tracked()
+
+    Dir.chdir(@third_client_dir) {
+      File.open("something", "r") { |f| assert_equal("xyzxyz", f.read()) }
     }
   end
 
