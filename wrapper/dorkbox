@@ -1,0 +1,4 @@
+#!/bin/bash
+# ruby's own File.expand_path() doesn't resolve symlinks, so we need this wrapper to properly launch our executable from /usr/bin
+set -e
+/opt/dorkbox/bin/dorkbox "$@"

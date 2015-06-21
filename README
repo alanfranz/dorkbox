@@ -1,0 +1,7 @@
+TODO:
+- suppress dorkbox_root. Add local crontab executor at first use instead.
+- consider git-annex / lfs
+- think about some notification system in case of errors (since the tool is noninteractive
+after first install)
+- some validation on hostnames/other variables
+- packaging

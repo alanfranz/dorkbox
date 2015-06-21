@@ -1,0 +1,93 @@
+#!/usr/bin/env ruby
+require 'dorkbox'
+require 'thor'
+
+class DorkboxCli < Thor
+  class_option :verbose, :type => :boolean
+
+  desc "create DIR URL", "create new dorkbox enabled repository DIR"
+  long_desc <<-LONGDESC
+  Creates a new dorbox-enabled git repository in the DIR directory,
+  with URL as its remote. Such remote must already exist, be writeable and empty.
+
+  Such repository will be automatically tracked for automated syncing purposes.
+
+  LONGDESC
+  def create(dir, dorkbox_remote_url)
+    Dorkbox::Repository.create_new(dir, dorkbox_remote_url)
+  end
+
+  desc "connect DIR URL", "connect DIR to existing dorkbox-enabled remote at URL"
+  long_desc <<-LONGDESC
+  Creates a new dorkbox-enabled git-repository in the DIR directory,
+  and connects to URL as a remote. Such remote must already exist and be
+  dorkbox-enabled.
+
+  Such repository will be automatically tracked for automated syncing purposes.
+
+  LONGDESC
+  def connect(dir, url)
+    Dorkbox::Repository.connect_existing(dir, url)
+  end
+
+  desc "sync <DIR>", "syncs dorkbox-enabled repository"
+  long_desc <<-LONGDESC
+  Performs a sync (automatic commit+pull+push) of the repo in the
+  current directory. You won't usually need this if you're using
+  the cron-based autosync.
+
+  Defaults to current directory.
+
+  LONGDESC
+  def sync(dir='.')
+    Dorkbox::Repository.new(dir).sync()
+  end
+
+  desc "track <DIR>", "re-enable tracking for repo in DIR"
+  long_desc <<-LONGDESC
+  Enable tracking (for autosync via command or cronjob) for
+  repo in current directory. This is useful if you disabled tracking
+  or if the repo was moved, and tracking should hence be reenabled.
+
+  Defaults to current directory.
+
+  LONGDESC
+  def track(dir='.')
+    Dorkbox::Repository.new(dir).track()
+  end
+
+  desc "untrack <DIR>", "disable tracking for repo in DIR"
+  long_desc <<-LONGDESC
+  Disable tracking (for autosync via command or cronjob) for
+  repo in current directory.
+
+  Defaults to current directory.
+
+  LONGDESC
+  def untrack(dir='.')
+    Dorkbox::Repository.new(dir).untrack()
+  end
+
+
+  desc "sync_all_tracked", "syncs all currently tracked repositories"
+  long_desc <<-LONGDESC
+  Performs a sync of all the tracked dorkbox repostories for the current user.
+
+  LONGDESC
+  def sync_all_tracked()
+    Dorkbox::sync_all_tracked()
+  end
+
+  desc "enable_autosync_all_tracked", "enable automatic syncing of all currently tracked repositories"
+  long_desc <<-LONGDESC
+  Enable periodic automatic sync of all tracked dorkbox-enabled
+  repositories.
+
+  LONGDESC
+  def enable_autosync_all_tracked()
+    Dorkbox::enable_dorkbox_cronjob()
+  end
+
+end
+
+DorkboxCli.start(ARGV)

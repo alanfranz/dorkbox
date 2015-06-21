@@ -1,0 +1,13 @@
+require 'minitest/unit'
+require 'minitest/spec'
+require 'minitest/mock'
+
+require 'dorkbox_test'
+
+if ARGV[0] != '--force'
+ abort("Must pass --force as first arg to launch tests locally. They may modify the environment.")
+end
+
+ARGV.shift()
+
+MiniTest::Unit.autorun
