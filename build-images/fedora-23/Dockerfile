@@ -1,5 +1,5 @@
-FROM alanfranz/fwd-fedora-rawhide:latest
+FROM alanfranz/fwd-fedora-23:latest
 MAINTAINER Alan Franzoni <username@franzoni.eu>
-RUN yum clean metadata && yum -y update
+RUN dnf clean metadata && dnf -y update
 RUN dnf -y install ruby ruby-devel rsync which
 RUN gem install rake bundler
