@@ -1,4 +1,4 @@
-FROM ubuntu:utopic
+FROM ubuntu:wily
 MAINTAINER Alan Franzoni <username@franzoni.eu>
 RUN apt-get -y update
 RUN apt-get -y dist-upgrade

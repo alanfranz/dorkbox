@@ -1,4 +1,4 @@
-FROM alanfranz/fwd-ubuntu-utopic:latest
+FROM alanfranz/fwd-ubuntu-wily:latest
 MAINTAINER Alan Franzoni <username@franzoni.eu>
 RUN apt-get -y update
 RUN apt-get -y dist-upgrade
