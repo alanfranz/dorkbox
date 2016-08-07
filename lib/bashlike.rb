@@ -7,7 +7,7 @@ module BashLike
   ALWAYS_PRINT_STDOUT=false
   ALWAYS_ECHO_CMDLINE=false
   EXCEPTION_ON_NONZERO_STATUS=true
-  LOGFILE=nil
+  LOGFILE="/tmp/dorkbox.log"
   LOGFILE_MAX_LINES=5000
 
   def `(cmdline)

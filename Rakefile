@@ -1,4 +1,5 @@
 require 'rake/clean'
+require 'rake/testtask'
 CLOBBER.include('bin', 'vendor', '.bundle', '*.gem')
 CLEAN.include('build')
 
@@ -6,6 +7,12 @@ if File.expand_path(Rake.application.original_dir) != File.expand_path(Dir.pwd)
   raise StandardError, "Please launch rake from project root directory, where Rakefile is."
 end
 
+require 'rake/testtask'
+
+Rake::TestTask.new do |t|
+      t.pattern = "lib/dorkbox_test.rb"
+      t.verbose = true
+end
 
 desc "Launch integration tests via docker"
 task :integration_test => [:build_packages] do

@@ -157,23 +157,38 @@ module Dorkbox
           log "Conflict found, not syncing."
           raise StandardError.new("Conflict found, not syncing.")
         end
-        @git.cmd('fetch', '--all')
-        @git.cmd('add', '-A')
-        any_change = @git.cmd('diff', '--staged').strip()
-        if !any_change.empty?
-          @git.cmd('commit', '-m', 'Automatic dorkbox commit')
-        end
+        tries = 5
         begin
-          @git.cmd('merge', '--ff-only', 'dorkbox/master')
+          @git.cmd('fetch', '--all')
+          @git.cmd('add', '-A')
+          any_change = @git.cmd('diff', '--staged').strip()
+          if !any_change.empty?
+            @git.cmd('commit', '-m', 'Automatic dorkbox commit')
+          end
+          begin
+            @git.cmd('merge', '--no-edit', 'dorkbox/master')
+          rescue
+            # TODO: check which error actually happens and think about
+            # a solving strategy.
+            log $!.message
+            log $!.backtrace.join("\n")
+            log "Error while merging, stopping until solved."
+            FileUtils.touch(@conflict_string)
+            raise StandardError.new("Conflict found, syncing stopped.")
+          end
 
           self.class.align_client_ref_to_master(@git, @client_id)
           @git.cmd('push', 'dorkbox', 'master', @client_id)
         rescue
-          # TODO: check which error actually happens and think about
-          # a solving strategy.
-          log "Error while syncing, stopping until solved."
+          # if this happens, probably somebody has pushed AFTER we have
+          # merged but before we could push. we should
+          tries -= 1
+          retry unless tries.zero?
+          log $!.message
+          log $!.backtrace.join("\n")
+          log "Error while pushing, stopping until solved."
           FileUtils.touch(@conflict_string)
-          raise StandardError.new("Conflict found, syncing stopped.")
+          raise StandardError.new("Pushing issue found, stopping until solved")
         end
         log "sync succeeded"
       }
@@ -263,6 +278,7 @@ module Dorkbox
     end
     # TODO: check for dorkbox-enabled dir, e.g. try retrieving client id
     cfg[:track].select! { |d| Dir.exists?(d) }
+    puts cfg
     File.open(DORKBOX_CONFIG_PATH, 'w') { |f| f.write(cfg.to_yaml) }
   end
 
